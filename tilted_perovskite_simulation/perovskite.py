@@ -390,7 +390,7 @@ class Perovskite:
 
 
 """
-        
+
         self.build_octahedra()
         self.rotate_octahedra()
         self.fix_displacement()

@@ -24,9 +24,6 @@ def write_single_pdf(args):
     except Exception as ex:
         print(str(ex))
         print("Exception: PDFCalculator not applied on {}.".format(cif_file_dir))
-    base_name = os.path.basename(pdf_file_dir)
-    file_name_without_suffix = os.path.splitext(base_name)[0]
-    return [file_name_without_suffix] + list(pc_cfg.values())
 
 
 def write_multiple_pdf(cif_folder_dir: str, pdf_folder_dir: str, pc_cfg: dict):

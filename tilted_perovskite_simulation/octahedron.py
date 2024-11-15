@@ -53,7 +53,7 @@ class Octahedron:
         tilt_signs = np.sign(tilt_angles)
 
         # Define the adjustment factors for each position
-        position_adjustments = {
+        position_sign = {
             (0, 0, 0): [1, 1, 1],
             (1, 0, 0): [tilt_signs[0], -1, -1],
             (0, 1, 0): [-1, tilt_signs[1], -1],
@@ -61,14 +61,14 @@ class Octahedron:
             (1, 1, 0): [-tilt_signs[0], -tilt_signs[1], 1],
             (1, 0, 1): [-tilt_signs[0], 1, -tilt_signs[2]],
             (0, 1, 1): [1, -tilt_signs[1], -tilt_signs[2]],
-            (1, 1, 1): [1, 1, 1],
+            (1, 1, 1): [tilt_signs[0], tilt_signs[1], tilt_signs[2]],
         }
 
         # Get the adjustment factors based on the current position
-        adjustments = position_adjustments.get(self.position, [1, 1, 1])
+        new_sign = position_sign.get(self.position)
 
         # Apply adjustments to the absolute tilt angles
-        processed_tilt_angles = tilt_angles_abs * adjustments
+        processed_tilt_angles = tilt_angles_abs * new_sign
 
         return np.radians(processed_tilt_angles)
 

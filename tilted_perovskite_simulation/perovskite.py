@@ -167,7 +167,7 @@ class Perovskite:
         for position in cation_positions:
             # Convert any 1 in the position to 0.5 * self.lattice_param
             cartesian_position = np.array(
-                [self.lattice_param if coord == 1 else 0 for coord in position]
+                [self.lattice_param if coord == 1 else 0.0 for coord in position]
             )
 
             # Store the position
@@ -191,12 +191,19 @@ class Perovskite:
 
         # Adjust the centers of the octahedra based on their positions
         for position, octahedron in self.octahedra.items():
-            if position[0] == 1:
-                octahedron.center += np.array([-adjustments[0], 0, 0])
-            if position[1] == 1:
-                octahedron.center += np.array([0, -adjustments[1], 0])
-            if position[2] == 1:
-                octahedron.center += np.array([0, 0, -adjustments[2]])
+            # Create an adjustment vector based on the position
+            adjustment_vector = np.array(
+                [
+                    -adjustments[0] if position[0] == 1 else 0,
+                    -adjustments[1] if position[1] == 1 else 0,
+                    -adjustments[2] if position[2] == 1 else 0,
+                ]
+            )
+            # Apply the adjustment to the center of the octahedron
+            octahedron.center += adjustment_vector
+            # Apply the same adjustment to each atom position
+            for atom_key in octahedron.atom_positions:
+                octahedron.atom_positions[atom_key] += adjustment_vector
 
         return self.octahedra
 
@@ -206,24 +213,32 @@ class Perovskite:
         For any 1 in the position, the corresponding coordinate is updated based on the difference
         between the centers of adjacent octahedra.
         """
+
+        ref_octa = self.octahedra[(0, 0, 0)]
+
         for position, cation_pos in self.a_cations.items():
-            # Update x coordinate if the x position is 1
-            if position[0] == 1:
+            # Update x-coordinate
+            if position[0] == 0:
+                cation_pos[0] = ref_octa.atom_positions["left"][0]
+            elif position[0] == 1:
                 cation_pos[0] = (
-                    self.octahedra[(1, 0, 0)].center[0]
-                    + self.octahedra[(0, 0, 0)].center[0]
+                    self.octahedra[(1, 0, 0)].center[0] + ref_octa.center[0]
                 ) / 2
-            # Update y coordinate if the y position is 1
-            if position[1] == 1:
+
+            # Update y-coordinate
+            if position[1] == 0:
+                cation_pos[1] = ref_octa.atom_positions["front"][1]
+            elif position[1] == 1:
                 cation_pos[1] = (
-                    self.octahedra[(0, 1, 0)].center[1]
-                    + self.octahedra[(0, 0, 0)].center[1]
+                    self.octahedra[(0, 1, 0)].center[1] + ref_octa.center[1]
                 ) / 2
-            # Update z coordinate if the z position is 1
-            if position[2] == 1:
+
+            # Update z-coordinate
+            if position[2] == 0:
+                cation_pos[2] = ref_octa.atom_positions["down"][2]
+            elif position[2] == 1:
                 cation_pos[2] = (
-                    self.octahedra[(0, 0, 1)].center[2]
-                    + self.octahedra[(0, 0, 0)].center[2]
+                    self.octahedra[(0, 0, 1)].center[2] + ref_octa.center[2]
                 ) / 2
 
         return self.a_cations
@@ -376,13 +391,11 @@ class Perovskite:
         # Get the structure dataframe in fractional coordinates
         structure_df = self.get_structure_dataframe(coord_type="frac")
 
-        origin = self.octahedra[(0, 0, 0)].center
-
         # Loop through each row in the dataframe and add atoms to the structure
         for _, row in structure_df.iterrows():
             perovskite_structure.addNewAtom(
                 atype=row["atom_species"],
-                xyz=row[["x", "y", "z"]].values - origin,  # Fractional coordinates
+                xyz=row[["x", "y", "z"]].values,  # Fractional coordinates
                 occupancy=1.0,
                 Uisoequiv=row["uiso"],  # Uiso values
             )

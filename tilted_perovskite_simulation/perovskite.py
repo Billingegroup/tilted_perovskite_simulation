@@ -100,7 +100,7 @@ class Perovskite:
         self.octahedra = self._initialize_supercell_octahedra()
         self.a_cations = self._initialize_supercell_a_cations()
 
-        # Rotate each octahedron based on the tilt angles
+        # Rotate all octahedra
         for _, octahedron in self.octahedra.items():
             octahedron.rotate(self.tilt_angles)
 
@@ -376,11 +376,13 @@ class Perovskite:
         # Get the structure dataframe in fractional coordinates
         structure_df = self.get_structure_dataframe(coord_type="frac")
 
+        origin = self.octahedra[(0, 0, 0)].center
+
         # Loop through each row in the dataframe and add atoms to the structure
         for _, row in structure_df.iterrows():
             perovskite_structure.addNewAtom(
                 atype=row["atom_species"],
-                xyz=row[["x", "y", "z"]].values,  # Fractional coordinates
+                xyz=row[["x", "y", "z"]].values - origin,  # Fractional coordinates
                 occupancy=1.0,
                 Uisoequiv=row["uiso"],  # Uiso values
             )

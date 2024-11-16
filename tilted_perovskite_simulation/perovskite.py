@@ -256,8 +256,8 @@ class Perovskite:
             - reference_octahedron.atom_positions["left"][0]
         )
         lattice_b = 2 * (
-            reference_octahedron.atom_positions["front"][1]
-            - reference_octahedron.atom_positions["back"][1]
+            reference_octahedron.atom_positions["back"][1]
+            - reference_octahedron.atom_positions["front"][1]
         )
         lattice_c = 2 * (
             reference_octahedron.atom_positions["up"][2]
